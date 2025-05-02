@@ -33,7 +33,7 @@ class Camera:
         self.th = threading.Thread(target=self.camera_task, args=(), daemon=True)
         self.th.start()
 
-    def camera_open(self, correction=False):
+    def camera_open(self, correction: object = False) -> None:
         try:
             self.cap = cv2.VideoCapture(-1)
             self.cap.set(cv2.CAP_PROP_FOURCC, cv2.VideoWriter_fourcc('Y', 'U', 'Y', 'V'))

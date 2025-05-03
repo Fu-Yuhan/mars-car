@@ -4,13 +4,13 @@ import time
 from HiwonderSDK.mecanum import MecanumChassis
 import cv2
 import Camera
-def move2front():
-    camara = Camera.Camera()
-    camara.camera_open(correction=True)
+def grab_and_move():
+    camera = Camera.Camera()
+    camera.camera_open(correction=True)
     car = MecanumChassis()
     # 调整姿态至正对位置
     while True:
-        cap = camara.cap
+        cap = camera.cap
         ret, frame = cap.read()
         success, encoded_images = cv2.imencode('.jpg',frame, [int(cv2.IMWRITE_JPEG_QUALITY), 85])
         if success:
@@ -23,9 +23,9 @@ def move2front():
 
             middle = biggest['location']['left'] + biggest['location']['width']
             if middle >= 340:
-                car.translation(0, 5)
+                car.translation(5, 0)
             if middle <= 300:
-                car.translation(0, 5)
+                car.translation(-5, 0)
             else:
                 break# 退出循环
         time.sleep(0.1)
@@ -33,7 +33,7 @@ def move2front():
 
     while True:
         car.set_velocity(35, 90, 0)
-        cap = camara.cap
+        cap = camera.cap
         ret, frame = cap.read()
         success, encoded_images = cv2.imencode('.jpg', frame, [int(cv2.IMWRITE_JPEG_QUALITY), 85])
         if success:
@@ -49,8 +49,8 @@ def move2front():
             # TODO:合抓
             break
     position = 10# TODO:量好预定距离
-    car.translation(position,0)
+    car.translation(0,position)
     # TODO:放置
     # TODO:抬起机械臂并按动发射
-    car.translation(-position,0)
+    car.translation(0,-position)
 

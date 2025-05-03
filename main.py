@@ -41,7 +41,7 @@ def find_sign():
             #left = cv2.imread('left.jpg', 0)
             #right = cv2.imread('right.jpg', 0)
             #cv2.imshow('img', img)
-            
+
 
 
 def main():
@@ -103,15 +103,6 @@ def main():
                 car.start()
         except Exception as e:
             print(e)
-
-
-
-
-
-
-
-
-
 
 
 if __name__ == "__main__":

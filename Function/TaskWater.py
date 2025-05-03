@@ -1,55 +1,52 @@
 import base64
-import BaiduObjDetect
 import time
-from HiwonderSDK.mecanum import MecanumChassis
+
 import cv2
+
 import Camera
-def grab_and_move():
-    camera = Camera.Camera()
-    camera.camera_open(correction=True)
+from Function.BaiduObjDetect import find_obj
+from HiwonderSDK.mecanum import MecanumChassis
+
+
+def grab_and_move(position):
+    camara = Camera.Camera()
+    camara.camera_open(correction=True)
     car = MecanumChassis()
-    # 调整姿态至正对位置
     while True:
-        cap = camera.cap
+        cap = camara.cap
         ret, frame = cap.read()
         success, encoded_images = cv2.imencode('.jpg',frame, [int(cv2.IMWRITE_JPEG_QUALITY), 85])
         if success:
             frame_base64 = base64.b64encode(encoded_images).decode('utf-8')
-            results = BaiduObjDetect.find_obj(frame_base64)
+            results = find_obj(frame_base64)
             biggest = {'location': {'height': 0, 'left': 0, 'top': 0, 'width': 0}, 'name': None, 'score': 0}
             for result in results['result']:
                 if result['location']['height'] * result['location']['width'] >= biggest['location']['height'] * biggest['location']['width']:
                     biggest = result
-
-            middle = biggest['location']['left'] + biggest['location']['width']
+            middle = biggest['location']['left']+biggest['location']['width']/2
             if middle >= 340:
                 car.translation(5, 0)
             if middle <= 300:
                 car.translation(-5, 0)
             else:
-                break# 退出循环
+                break  # 退出循环
         time.sleep(0.1)
-    # TODO:机械臂到位
-
     while True:
         car.set_velocity(35, 90, 0)
-        cap = camera.cap
+        cap = camara.cap
         ret, frame = cap.read()
         success, encoded_images = cv2.imencode('.jpg', frame, [int(cv2.IMWRITE_JPEG_QUALITY), 85])
         if success:
             frame_base64 = base64.b64encode(encoded_images).decode('utf-8')
-            results = BaiduObjDetect.find_obj(frame_base64)
+            results = find_obj(frame_base64)
             biggest = {'location': {'height': 0, 'left': 0, 'top': 0, 'width': 0}, 'name': None, 'score': 0}
             for result in results['result']:
-                if result['location']['height'] * result['location']['width'] >= biggest['location']['height'] * \
-                        biggest['location']['width']:
+                if result['location']['height'] * result['location']['width'] >= biggest['location']['height'] * biggest['location']['width']:
                     biggest = result
-        middle = biggest['location']['top']-biggest['location']['height']/2
-        if middle <= 80:# TODO:能抓到的地方
-            # TODO:合抓
-            break
-    position = 10# TODO:量好预定距离
-    car.translation(0,position)
-    # TODO:放置
-    car.translation(0,-position)
-
+            middle = biggest['location']['top']-biggest['location']['height']/2
+                # TODO:判断什么时候能抓取
+            if True:
+                car.translation(0, 0)
+                break
+    #TODO:合抓
+    car.translation(-100 if position == "left" else 100,50)

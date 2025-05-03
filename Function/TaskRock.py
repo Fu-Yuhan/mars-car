@@ -1,15 +1,16 @@
 import base64
 import BaiduObjDetect
-
-from statsmodels.stats.libqsturng.make_tbls import success
+import time
+from HiwonderSDK.mecanum import MecanumChassis
 import cv2
 import Camera
-def move2front():
-    camara = Camera.Camera()
-    camara.camera_open(correction=True)
+def grab_and_move():
+    camera = Camera.Camera()
+    camera.camera_open(correction=True)
+    car = MecanumChassis()
     # 调整姿态至正对位置
     while True:
-        cap = camara.cap
+        cap = camera.cap
         ret, frame = cap.read()
         success, encoded_images = cv2.imencode('.jpg',frame, [int(cv2.IMWRITE_JPEG_QUALITY), 85])
         if success:
@@ -22,16 +23,17 @@ def move2front():
 
             middle = biggest['location']['left'] + biggest['location']['width']
             if middle >= 340:
-                pass# TODO:向右移动
+                car.translation(0, 5)
             if middle <= 300:
-                pass# TODO:向左移动
+                car.translation(0, 5)
             else:
                 break# 退出循环
+        time.sleep(0.1)
     # TODO:机械臂到位
 
     while True:
-        # TODO:前进
-        cap = camara.cap
+        car.set_velocity(35, 90, 0)
+        cap = camera.cap
         ret, frame = cap.read()
         success, encoded_images = cv2.imencode('.jpg', frame, [int(cv2.IMWRITE_JPEG_QUALITY), 85])
         if success:
@@ -43,10 +45,11 @@ def move2front():
                         biggest['location']['width']:
                     biggest = result
         middle = biggest['location']['top']-biggest['location']['height']/2
-        if middle <= 160:# 能抓到的地方
+        if middle <= 80:# TODO:能抓到的地方
             # TODO:合抓
             break
-    # TODO:前进预定的距离
+    position = 10# TODO:量好预定距离
+    car.translation(position,0)
     # TODO:放置
-    # TODO:后退
+    car.translation(-position,0)
 

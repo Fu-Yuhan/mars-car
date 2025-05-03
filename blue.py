@@ -1,7 +1,21 @@
 import cv2
 import numpy as np
+from skimage.metrics import structural_similarity
 time=0
- 
+def similar_test(image1, image2):
+    global time
+    time+=1
+    image1_ = cv2.resize(image1, (10,10))
+    image2_ = cv2.resize(image2, (10,10))
+    score=0
+    for y in range(10):
+        for x in range(10):
+            xiang1 = image1_[y, x]
+            xiang2 = image2_[y, x]
+            if xiang1== xiang2 :
+                score+=1
+    print(score)
+    return score
 def similar(image1, image2):
     global time
     time+=1
@@ -11,6 +25,11 @@ def similar(image1, image2):
     #cv2.imshow('image2'+str(time), image2_)
     # 灰度直方图算法
     # 计算单通道的直方图的相似值
+    '''
+    cv2.imshow('image1',image1_)
+    cv2.imshow('image2',image2_)
+    cv2.waitKey(0)
+    '''
     hist1 = cv2.calcHist([image1_], [0], None, [256], [0.0, 255.0])
     hist2 = cv2.calcHist([image2_], [0], None, [256], [0.0, 255.0])
     # 计算直方图的重合度
@@ -125,14 +144,31 @@ def largest(binary_image):
     warped = cv2.warpPerspective(binary_image, M, (width, height))
 
     return warped
+def largest_large(binary_image):
+    contours, _ = cv2.findContours(binary_image, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
+
+    if not contours:
+        return None
+
+    largest_contour = max(contours, key=cv2.contourArea)
+
+    # 普通外接矩形
+    x, y, w, h = cv2.boundingRect(largest_contour)
+    bounding_rect_image = binary_image[y:y+h, x:x+w]
+
+    return bounding_rect_image
 #cv2.destroyAllWindows()
 def similation(img1,img2):
     ppp=[]
+    '''
+    cv2.imshow('img1',img1)
+    cv2.imshow('img2',img2)
+    cv2.waitKey(0)
+    '''
     for i in range(4):
         img2_=img2
-        for ia in range(i):
-            img2_ = cv2.transpose(img2_)
-        sim=similar(img1,img2_)
+        img2_=np.rot90(img2_, i)
+        sim=similar_test(img1,img2_)
         #print(sim)
         ppp.append(sim)
         #cv2.imshow('img1'+str(i+1),img1)
@@ -150,6 +186,13 @@ def main(img,img2):
     edges  = find_blue(img)
     edges2 = find_blue(img2)
     large = largest(edges2)
+    if  large is None:
+        return None
+    large_=cv2.bitwise_not(large)
+    large_size=large.shape
+    a,b,c,d=int(large_size[0]/9),int(large_size[0]*8/9),int(large_size[1]/9),int(large_size[1]*8/9)
+    large_=large_[a:b,c:d]
+    large=largest_large(large_)
     '''
     cv2.imshow('img', large)
     cv2.imshow("edges",edges)
@@ -162,7 +205,11 @@ def main(img,img2):
     #print(large.shape)
     if large.shape[0]<size*0.06 or large.shape[1]<size*0.06:
         return None
-    edges_lest=  largest(edges)
+    #edges_lest=  largest(edges)
+    edges=cv2.bitwise_not(edges)
+    edges=largest_large(edges)
+
+    edges_lest=edges
     sim=similation(edges_lest,large)
     #direction = recognize_direction(edges)
     '''
@@ -183,8 +230,8 @@ def sim_turn(img2,img_left=None,img_right=None):
         img_right= cv2.imread('right.jpg')
     #img2= cv2.imread('test.jpg')
     sim_left=main(img_left,img2)
-    if sim_left:
-        sim_right=main(img_right,img2)
+    sim_right=main(img_right,img2)
+    if sim_left and sim_right:
         if sim_right>sim_left:
             return 'right'
         elif sim_right<sim_left:
@@ -193,13 +240,13 @@ def sim_turn(img2,img_left=None,img_right=None):
             return None
     else:
         return None
-import os
-paths = os.walk(r'./test/left')
-
-for path, dir_lst, file_lst in paths:
-    for file_name in file_lst:
-        print(file_name)
-        img=cv2.imread('test\left\\'+file_name)
-        print(sim_turn(img))
+if  __name__ == '__main__':
+    import os
+    paths = os.walk(r'./test/test')
+    for path, dir_lst, file_lst in paths:
+        for file_name in file_lst:
+            print(file_name)
+            img=cv2.imread('test\\test\\'+file_name)
+            print(sim_turn(img))
 #img=cv2.imread('.jpg')
 #print(sim_turn(img))

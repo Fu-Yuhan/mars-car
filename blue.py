@@ -1,15 +1,14 @@
 import cv2
 import numpy as np
-from skimage.metrics import structural_similarity
 time=0
 def similar_test(image1, image2):
     global time
     time+=1
-    image1_ = cv2.resize(image1, (10,10))
-    image2_ = cv2.resize(image2, (10,10))
+    image1_ = cv2.resize(image1, (12,12))
+    image2_ = cv2.resize(image2, (12,12))
     score=0
-    for y in range(10):
-        for x in range(10):
+    for y in range(12):
+        for x in range(12):
             xiang1 = image1_[y, x]
             xiang2 = image2_[y, x]
             if xiang1== xiang2 :
@@ -66,7 +65,7 @@ def find_blue(img):
  
     # H、S、V范围一：
     #lower1 = np.array([100,43,46])
-    lower1 = np.array([100,80,80])
+    lower1 = np.array([95,80,80])
     upper1 = np.array([124,255,255])
     mask = cv2.inRange(grid_HSV, lower1, upper1)       # mask1 为二值图像
     #res1 = cv2.bitwise_and(grid_RGB, grid_RGB, mask=mask1)
@@ -174,7 +173,7 @@ def similation(img1,img2):
         #cv2.imshow('img1'+str(i+1),img1)
         #cv2.imshow('img2'+str(i+1),img2_)
     return max(ppp)
-def main(img,img2):
+def main(img,img2,types='sign'):
     #print(img2.shape)
     size=min(img2.shape[1],img2.shape[0])
     #print(size)
@@ -188,20 +187,21 @@ def main(img,img2):
     large = largest(edges2)
     if  large is None:
         return None
-    large_=cv2.bitwise_not(large)
-    large_size=large.shape
-    a,b,c,d=int(large_size[0]/9),int(large_size[0]*8/9),int(large_size[1]/9),int(large_size[1]*8/9)
-    large_=large_[a:b,c:d]
-    large=largest_large(large_)
+    if ((not types) or types=='sign') and (not types=='AB'):
+        large_=cv2.bitwise_not(large)
+        large_size=large.shape
+        a,b,c,d=int(large_size[0]/9),int(large_size[0]*8/9),int(large_size[1]/9),int(large_size[1]*8/9)
+        large_=large_[a:b,c:d]
+        large=largest_large(large_)
+        if  large is None:
+            return None
     '''
     cv2.imshow('img', large)
     cv2.imshow("edges",edges)
     cv2.imshow("edges2",edges2)
     cv2.waitKey(0)
     '''
-    if  large is None:
-        return None
-    cv2.waitKey(0)
+    #cv2.waitKey(0)
     #print(large.shape)
     if large.shape[0]<size*0.06 or large.shape[1]<size*0.06:
         return None
@@ -240,13 +240,31 @@ def sim_turn(img2,img_left=None,img_right=None):
             return None
     else:
         return None
+def sim_AB(img,img_A=None,img_B=None):
+    if img_A is None:
+        img_A= cv2.imread('A.png')
+    if img_B is None:
+        img_B= cv2.imread('B.png')
+    sim_A=main(img_A,img,'AB')
+    sim_B=main(img_B,img,'AB')
+    if sim_A and sim_B:
+        if sim_A>sim_B:
+            return 'A'
+        elif sim_A<sim_B:
+            return 'B'
+        else:
+            return None
+    else:
+        return None
 if  __name__ == '__main__':
     import os
-    paths = os.walk(r'./test/test')
+    paths = os.walk(r'./test/B')
     for path, dir_lst, file_lst in paths:
         for file_name in file_lst:
             print(file_name)
-            img=cv2.imread('test\\test\\'+file_name)
-            print(sim_turn(img))
+            if file_name=='B (5).jpg':
+                print('')
+            img=cv2.imread('test\\B\\'+file_name)
+            print(sim_AB(img))
 #img=cv2.imread('.jpg')
 #print(sim_turn(img))

@@ -6,7 +6,7 @@ import cv2
 import time
 import math
 import signal
-import Camera
+
 import threading
 import numpy as np
 import yaml_handle
@@ -573,29 +573,10 @@ def manualcar_stop(signum, frame, robot):
 
 
 # 主程序入口
+
 if __name__ == '__main__':
     robot = LineFollowMgr()
-    signal.signal(signal.SIGINT, lambda s, f: manualcar_stop(s, f, robot))# 中断用
-
-    camera = Camera.Camera()
-    camera.camera_open(correction=True)
-
-    try:
-        while robot.isRunning:
-            img = camera.frame
-            if img is not None:
-                frame = img.copy()
-                Frame = robot.run(frame)
-                frame_resize = cv2.resize(Frame, (320, 240))
-                cv2.imshow('frame', frame_resize)
-
-                key = cv2.waitKey(1)
-                if key == 27:  # ESC键退出
-                    break
-            else:
-                time.sleep(0.01)
-    except KeyboardInterrupt as e:
-        sys.exit()
-    finally:
-        camera.camera_close()
-        cv2.destroyAllWindows()
+    signal.signal(signal.SIGINT, lambda signum, frame: manualcar_stop(signum, frame, robot))
+    robot.start()
+    cv2.waitKey(0)
+    cv2.destroyAllWindows()

@@ -2,7 +2,7 @@ import time
 
 from Function import LookForObj, TaskRock
 from Function.LineFollower import LineFollowMgr
-import Camera
+
 import math
 import threading
 import cv2
@@ -56,8 +56,7 @@ def main():
     car.start()
     status = "before detected"
     # 初始化摄像头
-    camera = Camera.Camera()
-    camera.camera_open(correction=True)
+
 
     while True:
         #find_sign()

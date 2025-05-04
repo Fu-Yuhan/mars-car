@@ -3,17 +3,19 @@ import time
 
 import cv2
 
-import Camera
+
 from Function.BaiduObjDetect import find_obj
 from HiwonderSDK.mecanum import MecanumChassis
+from HiwonderSDK.Board import setPWMServoPulse
 
 
 def grab_and_move(position):
-    camara = Camera.Camera()
-    camara.camera_open(correction=True)
+    cap = cv2.VideoCapture(-1)
+    cap.set(cv2.CAP_PROP_FRAME_WIDTH, 640)
+    cap.set(cv2.CAP_PROP_FRAME_HEIGHT, 480)
     car = MecanumChassis()
     while True:
-        cap = camara.cap
+
         ret, frame = cap.read()
         success, encoded_images = cv2.imencode('.jpg',frame, [int(cv2.IMWRITE_JPEG_QUALITY), 85])
         if success:
@@ -25,15 +27,15 @@ def grab_and_move(position):
                     biggest = result
             middle = biggest['location']['left']+biggest['location']['width']/2
             if middle >= 340:
-                car.translation(5, 0)
-            if middle <= 300:
+
                 car.translation(-5, 0)
+            if middle <= 300:
+                car.translation(5, 0)
             else:
                 break  # 退出循环
         time.sleep(0.1)
     while True:
         car.set_velocity(35, 90, 0)
-        cap = camara.cap
         ret, frame = cap.read()
         success, encoded_images = cv2.imencode('.jpg', frame, [int(cv2.IMWRITE_JPEG_QUALITY), 85])
         if success:
@@ -45,9 +47,10 @@ def grab_and_move(position):
                     biggest = result
             middle = biggest['location']['top']-biggest['location']['height']/2
                 # TODO:判断什么时候能抓取
-            if True:
-                car.translation(0, 0)
+            if middle <= 480 - 80:
+                car.set_velocity(0, 90, 0)
                 break
-    #TODO:合抓
+    setPWMServoPulse(1, 2100, 500)
     car.translation(-100 if position == "left" else 100,50)
-    #TODO:放置
+    setPWMServoPulse(1, 1500, 500)
+    car.translation(0, -50)

@@ -50,3 +50,4 @@ def grab_and_move(position):
                 break
     #TODO:合抓
     car.translation(-100 if position == "left" else 100,50)
+    #TODO:放置

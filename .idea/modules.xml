@@ -2,6 +2,7 @@
 <project version="4">
   <component name="ProjectModuleManager">
     <modules>
+      <module fileurl="file://$PROJECT_DIR$/../FastAPIProxy/.idea/FastAPIProxy.iml" filepath="$PROJECT_DIR$/../FastAPIProxy/.idea/FastAPIProxy.iml" />
       <module fileurl="file://$PROJECT_DIR$/.idea/mars-car.iml" filepath="$PROJECT_DIR$/.idea/mars-car.iml" />
     </modules>
   </component>
